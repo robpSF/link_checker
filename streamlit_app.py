@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import requests
 import re
+from urllib.parse import urlparse
 
 def main():
     st.title("Broken Link Checker for Excel Files")
@@ -19,7 +20,7 @@ def main():
         cells.columns = ['row', 'col', 'value']
 
         # Regular expression pattern to find URLs
-        url_pattern = re.compile(r'(https?://[^\s]+)')
+        url_pattern = re.compile(r'(https?://[^\s",]+)')
 
         # List to hold all URLs with their positions
         urls = []
@@ -29,7 +30,10 @@ def main():
             cell_value = str(row['value'])
             matches = url_pattern.findall(cell_value)
             for url in matches:
-                urls.append({'row': row['row'], 'col': row['col'], 'url': url})
+                # Validate URL
+                parsed_url = urlparse(url)
+                if parsed_url.scheme and parsed_url.netloc:
+                    urls.append({'row': row['row'], 'col': row['col'], 'url': url})
 
         total_links = len(urls)
         if total_links == 0:
